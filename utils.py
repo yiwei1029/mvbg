@@ -26,3 +26,15 @@ def cal_rbf_dist(A,B,n_neighbors,t):
         W[i,idx] = np.exp(-1/t*dist[i][idx])
         W[idx,i] = W[i,idx]
     return W
+
+def eig_selection(cov,d_ ,top = True):
+    '''
+    top: top k eigenvalue
+    '''
+    eigval, eigvec = np.linalg.eig(cov)
+    if top:
+        idx = np.argpartition(eigval, -d_)[-d_:]
+    else:
+        idx = np.argpartition(eigval, d_)[:d_]
+    selected_vec = eigvec[:,idx]
+    return selected_vec
