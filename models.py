@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.linalg import multi_dot
+from sklearn import manifold
 from utils import *
 class MVBG:
     def __init__(self,alpha,gamma,beta):
@@ -86,3 +87,26 @@ class PCA:
             out = select_vec.T.dot(x)
             dim_reductions.append(out)
         return sum(dim_reductions)/len(dim_reductions)
+
+class LPP_LE:
+    def lpp(self,X,t,d_):
+        '''
+        Locality Preserving Projection \n
+        X: list of (d_v,n)
+        '''
+        X = np.concatenate(X)
+        W = np.exp(1/t*dist_2m_sq(X.T,X.T))
+        D = np.diag(W.sum(1))
+        L  = D-W
+        lhs = X.dot(L).dot(X.T)
+        rhs = X.dot(D).dot(X.T)
+        cov = np.linalg.inv(rhs).dot(lhs)
+        eigval, eigvec = np.linalg.eig(cov)
+        idx = np.argpartition(eigval, d_)[:d_]
+        selected_vec = eigvec[:,idx]
+        return selected_vec.T.dot(X)
+    def le(self,X,d_,n_neighbors):
+        X = np.concatenate(X)
+        se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
+        Y = se.fit_transform(X.T)
+        return Y.T
