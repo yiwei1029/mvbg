@@ -24,7 +24,7 @@ def cal_rbf_dist(A,B,n_neighbors,t):
     for i in range(N):
         idx = np.argsort(dist[i])[1:1+n_neighbors]
         W[i,idx] = np.exp(-1/t*dist[i][idx])
-        W[idx,i] = W[i,idx]
+        W[idx,i] = np.exp(-1/t*dist[idx][i])
     return W
 
 def eig_selection(cov,d_ ,top = True):
