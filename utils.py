@@ -16,3 +16,13 @@ def read_data(filename):
     X = data['X']
     labels = data['Y']
     return X,labels
+
+def cal_rbf_dist(A,B,n_neighbors,t):
+    dist = dist_2m_sq(A,B)
+    N =dist.shape[0]
+    W = np.zeros((N,N))
+    for i in range(N):
+        idx = np.argsort(dist[i])[1:1+n_neighbors]
+        W[i,idx] = np.exp(-1/t*dist[i][idx])
+        W[idx,i] = W[i,idx]
+    return W

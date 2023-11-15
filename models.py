@@ -95,7 +95,7 @@ class LPP_LE:
         X: list of (d_v,n)
         '''
         X = np.concatenate(X)
-        W = np.exp(1/t*dist_2m_sq(X.T,X.T))
+        W = cal_rbf_dist(X,X,10,1)
         D = np.diag(W.sum(1))
         L  = D-W
         lhs = X.dot(L).dot(X.T)
