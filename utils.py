@@ -24,7 +24,8 @@ def cal_rbf_dist(A,B,n_neighbors,t):
     for i in range(N):
         idx = np.argsort(dist[i])[1:1+n_neighbors]
         W[i,idx] = np.exp(-1/t*dist[i][idx])
-        W[idx,i] = np.exp(-1/t*dist[idx][i])
+        # W[idx,i] = np.exp(-1/t*dist[idx][i])
+        W[idx,i]= W[i,idx]
     return W
 
 def eig_selection(cov,d_ ,top = True):
@@ -32,9 +33,19 @@ def eig_selection(cov,d_ ,top = True):
     top: top k eigenvalue
     '''
     eigval, eigvec = np.linalg.eig(cov)
+    eigval = np.real(eigval)
+    eigvec = np.real(eigvec)
     if top:
         idx = np.argpartition(eigval, -d_)[-d_:]
     else:
         idx = np.argpartition(eigval, d_)[:d_]
     selected_vec = eigvec[:,idx]
     return selected_vec
+
+from sklearn.cluster import KMeans
+def kmeans(Y,n_clusters):
+    '''
+    Y: dimension embedding
+    '''
+    km = KMeans(random_state=0,n_clusters=n_clusters).fit(Y.T)
+    return km.labels_
