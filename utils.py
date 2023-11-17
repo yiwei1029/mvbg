@@ -47,5 +47,5 @@ def kmeans(Y,n_clusters):
     '''
     Y: dimension embedding
     '''
-    km = KMeans(random_state=0,n_clusters=n_clusters).fit(Y.T)
+    km = KMeans(random_state=None,n_clusters=n_clusters).fit(Y.T)
     return km.labels_
