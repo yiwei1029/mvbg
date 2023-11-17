@@ -110,3 +110,32 @@ class LPP_LE:
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
         Y = se.fit_transform(X.T)
         return Y.T
+
+class MSE:
+    def mse(self,X,gamma,d_,epoch =500):
+        '''
+        MSE ALgorithm \n
+        X: list of (d_v,n)
+        d_: embedding dimension
+        gamma: regularization parameter 
+        '''
+        W = []
+        n_v = len(X)
+        for x in X:
+            W.append(cal_rbf_dist(x.T,x.T,10,10))
+        D =  [w.sum(1) for w in W]
+        L =  [np.linalg.inv(np.sqrt(D[i])).dot(D[i]-W[i])\
+              .dot(np.linalg.inv(np.sqrt(D[i]))) for i in range(n_v)]
+        
+        #init
+        alpha = [1/n_v]*n_v
+        # loop
+        for i in range(epoch):
+            # update Y
+            L_weighted_sum  = sum([alpha[i]**gamma*L[i] for i in range(n_v)])
+            Y = eig_selection(L_weighted_sum,d_=d_,top=False).T
+
+            #update alpha
+            alpha =  [1/np.trace(Y.dot(L[i])).dot(Y.T) for i in range(n_v)]
+            alpha = alpha/sum(alpha)
+        return Y
