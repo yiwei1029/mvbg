@@ -138,3 +138,42 @@ class MSE:
             alpha =  [1/np.trace(Y.dot(L[i]).dot(Y.T)) for i in range(n_v)]
             alpha = alpha/sum(alpha)
         return Y
+    
+class MDcR:
+    def mdcr(self,X,d_,t,lmd,epoch =500):
+        n_v = len(X)
+        W =  []
+        P=[]
+        # init P_v
+        for x in X:
+            W.append(cal_rbf_dist(x.T,x.T,70,t=t))
+        for v in range(n_v):
+            x = X[v]
+            w = W[v]
+            d = w.sum(1)
+
+            l = np.sqrt(np.linalg.inv(d)).dot(w).dot(np.sqrt(np.linalg.inv(d)))
+            cov =  x.dot(l).dot(x.T)
+            selected_vec = eig_selection(cov,d_,True)
+            P.append(selected_vec)
+        
+        #loop
+        
+        for i in range(epoch):
+            Z = [ P[v].T.dot(X[v])for v in range(n_v) ]
+            K = [z.T.dot(z) for z in Z]
+            for v in range(n_v):
+                x = X[v]
+                l = np.sqrt(np.linalg.inv(d)).dot(w).dot(np.sqrt(np.linalg.inv(d)))
+
+                A = x.dot(l).dot(x.T)
+                h  = np.identity(x.shape[1])-1/x.shape[1]
+                
+                B = sum([x.dot(h).dot(K[j]).dot(h).dot(x.T) \
+                         for j in range(n_v) if j!=v ]   )
+                cov = (A+lmd*B)
+                selected_vec = eig_selection(cov,d_,True)
+                P[v] = selected_vec
+        
+        return [ P[v].T.dot(X[v])for v in range(n_v) ]
+            
