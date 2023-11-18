@@ -150,7 +150,7 @@ class MDcR:
         for v in range(n_v):
             x = X[v]
             w = W[v]
-            d = w.sum(1)
+            d = np.diag(w.sum(1))
 
             l = np.sqrt(np.linalg.inv(d)).dot(w).dot(np.sqrt(np.linalg.inv(d)))
             cov =  x.dot(l).dot(x.T)
