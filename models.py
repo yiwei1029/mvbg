@@ -175,5 +175,5 @@ class MDcR:
                 selected_vec = eig_selection(cov,d_,True)
                 P[v] = selected_vec
         
-        return [ P[v].T.dot(X[v])for v in range(n_v) ]
+        return sum([ P[v].T.dot(X[v])for v in range(n_v) ])
             
