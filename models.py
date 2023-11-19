@@ -196,5 +196,7 @@ class DSE:
             block2 = (P.sum(1)+alpha).reshape(-1,1)
             B =   B*block1/block2
             #update P
-            block3 = 
-            P = 
+            block3 = (A/(B.dot(P))).T.dot(B).sum(0).reshape(1,-1)
+            block4 = B.sum(0).reshape(1,-1) # (1,k)
+            P = P*block3/block4
+        return B.argmax(1)
