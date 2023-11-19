@@ -176,4 +176,20 @@ class MDcR:
                 P[v] = selected_vec
         
         return sum([ P[v].T.dot(X[v])for v in range(n_v) ])
-            
+
+class DSE:
+    def dse(self,X,n_clusters,d_,t,epoch =500):
+        A_list=[]
+        n_v= len(X)
+        for x in X:
+            pattern = kmeans_cluster_prob(x.T,n_clusters)  # (n,n_clusters)  
+            A_list.append(pattern)
+        A  = np.concatenate(A_list,axis=1) # 橫向拼接 (n,n_clusters*n_v)
+        #init B and P
+        B = np.random.rand(x.shape[1],n_clusters) #(n,n_clusters)
+        B = B/B.sum(1).reshape(-1,1)
+        P =  np.random.rand(n_clusters,x.shape[1]*n_v) #(n_clusters,n_clusters*n_v)
+        #loop
+        for i in range(epoch):
+            block1 = A.divide(B.dot(P))
+            B =   B.dot())

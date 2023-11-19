@@ -51,6 +51,9 @@ def kmeans(Y,n_clusters):
     return km.labels_
 
 def kmeans_cluster_prob(Y:np.ndarray,n_clusters:int =7)-> np.ndarray:
+    '''
+    Y:d*n (original data)
+    '''
     km = KMeans(random_state=None,n_clusters=n_clusters).fit(Y.T)
     source   = Y.T
     centers = km.cluster_centers_
