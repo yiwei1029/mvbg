@@ -178,18 +178,23 @@ class MDcR:
         return sum([ P[v].T.dot(X[v])for v in range(n_v) ])
 
 class DSE:
-    def dse(self,X,n_clusters,d_,t,epoch =500):
+    def dse(self,X,k,d_,t,epoch =500):
         A_list=[]
         n_v= len(X)
         for x in X:
-            pattern = kmeans_cluster_prob(x.T,n_clusters)  # (n,n_clusters)  
+            pattern = kmeans_cluster_prob(x.T,k)  # (n,k)  
             A_list.append(pattern)
-        A  = np.concatenate(A_list,axis=1) # 橫向拼接 (n,n_clusters*n_v)
+        A  = np.concatenate(A_list,axis=1) # 橫向拼接 (n,k*n_v)
         #init B and P
-        B = np.random.rand(x.shape[1],n_clusters) #(n,n_clusters)
+        B = np.random.rand(x.shape[1],k) #(n,k)
         B = B/B.sum(1).reshape(-1,1)
-        P =  np.random.rand(n_clusters,x.shape[1]*n_v) #(n_clusters,n_clusters*n_v)
+        P =  np.random.rand(k,x.shape[1]*n_v) #(k,k*n_v)
         #loop
         for i in range(epoch):
-            block1 = A.divide(B.dot(P)).dot(P.T).sum(1)+alpha*np.ones(x.shape[1])
-            B =   B.dot()
+            #update B
+            block1 = A.divide(B.dot(P)).dot(P.T).sum(1).reshape(-1,1)+alpha*(1/B.sum(1)).reshape(-1,1)
+            block2 = (P.sum(1)+alpha).reshape(-1,1)
+            B =   B*block1/block2
+            #update P
+            block3 = 
+            P = 
