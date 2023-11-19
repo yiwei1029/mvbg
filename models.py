@@ -8,26 +8,28 @@ class MVBG:
         self.gamma = gamma
         self.beta = beta
 
-    def mvbg(self,w, X, Z,d_): #d_:embedding d; X is a list of (d_v,n)
-        #step1: updating U_v
-                #(v,d_v,n)
-        v = len(w)
-        U=[multi_dot([x,Z.T, np.linalg.inv(Z.dot(Z.T))]) for x in X]
-        #step2: Updating E
-        D_F=np.diag(np.sum(axis=0))
-        D_G=np.diag(np.sum(axis=1))
-        A_temp = np.linalg.inv(np.sqrt(D_F)).dot(Z).dot(np.linalg.inv(np.sqrt(D_G))) #for SVD
-        u_A,s_A,v_A =np.linalg.svd(A_temp)
-        F = u_A[:,:d_]*np.sqrt(2)/2
-        G = v_A[:d_,:].T*np.sqrt(2)/2
-        E = np.concatenate([F,G])
-        #step3: Updating Z
-        self.update_z(w,U, X, F,G,Z)
-        #step4: Updating W
-        h = [X[i]-U[i].dot(Z) for i in range(len(w))]
-        h = [sum(h_v**2) for h_v in h]
-        power = 1/(1-self.gamma)
-        w = h**power/sum(h**power)
+    def mvbg(self,w, X, Z,d_,epoch=500): #d_:embedding d; X is a list of (d_v,n)
+        for i in range(epoch):
+                #step1: updating U_v
+                        #(v,d_v,n)
+            v = len(w)
+            U=[multi_dot([x,Z.T, np.linalg.inv(Z.dot(Z.T))]) for x in X]
+            #step2: Updating E
+            D_F=np.diag(np.sum(axis=0))
+            D_G=np.diag(np.sum(axis=1))
+            A_temp = np.linalg.inv(np.sqrt(D_F)).dot(Z).dot(np.linalg.inv(np.sqrt(D_G))) #for SVD
+            u_A,s_A,v_A =np.linalg.svd(A_temp)
+            F = u_A[:,:d_]*np.sqrt(2)/2
+            G = v_A[:d_,:].T*np.sqrt(2)/2
+            E = np.concatenate([F,G])
+            #step3: Updating Z
+            self.update_z(w,U, X, F,G,Z)
+            #step4: Updating W
+            h = [X[i]-U[i].dot(Z) for i in range(len(w))]
+            h = [sum(h_v**2) for h_v in h]
+            power = 1/(1-self.gamma)
+            w = h**power/sum(h**power)
+        return F
 
 
     def update_z(self,w,U, X, F,G,Z):
@@ -200,4 +202,4 @@ class DSE:
             block4 = B.sum(0).reshape(-1,1) # (1,k)
             P = P*block3/block4
             b = B.argmax(1)
-        return B.argmax(1)
+        return b
