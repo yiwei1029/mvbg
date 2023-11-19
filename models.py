@@ -191,5 +191,5 @@ class DSE:
         P =  np.random.rand(n_clusters,x.shape[1]*n_v) #(n_clusters,n_clusters*n_v)
         #loop
         for i in range(epoch):
-            block1 = A.divide(B.dot(P))
-            B =   B.dot())
+            block1 = A.divide(B.dot(P)).dot(P.T).sum(1)+alpha*np.ones(x.shape[1])
+            B =   B.dot()
