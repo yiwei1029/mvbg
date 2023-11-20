@@ -188,18 +188,18 @@ class DSE:
             A_list.append(pattern)
         A  = np.concatenate(A_list,axis=1) # 橫向拼接 (n,k*n_v)
         #init B and P
-        B = np.random.rand(x.shape[1],k) #(n,k)
+        B = np.random.rand(x.shape[1],k)*k #(n,k)
         B = np.exp(B)/(np.exp(B).sum(1).reshape(-1,1))
         P =  np.random.rand(k,k*n_v) #(k,k*n_v)
         #loop
         for i in range(epoch):
             #update B
-            block1 = ((A/(B.dot(P))).dot(P.T)).sum(1).reshape(-1,1)+alpha*(1/B.sum(1)).reshape(-1,1)
-            block2 = (P.sum(1)+alpha).reshape(1,-1) #(1,k)
-            B =   B*block1/block2
+            block1 = (A/(B.dot(P))).dot(P.T)+alpha*(1/B.sum(1)).reshape(-1,1) #(n,k)
+            block2 = (P.sum(1)+alpha).reshape(-1,1) #(k,1)
+            B =   B*block1/block2.reshape(1,-1)
             #update P
-            block3 = ((A/(B.dot(P))).T.dot(B)).sum(0).reshape(-1,1)
-            block4 = B.sum(0).reshape(-1,1) # (1,k)
+            block3 =  B.T.dot(A/(B.dot(P)))
+            block4 = B.sum(0).reshape(-1,1) # (k,1 )
             P = P*block3/block4
             b = B.argmax(1)
         return b
