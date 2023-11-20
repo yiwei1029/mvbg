@@ -189,8 +189,10 @@ class DSE:
         A  = np.concatenate(A_list,axis=1) # 橫向拼接 (n,k*n_v)
         #init B and P
         B = np.random.rand(x.shape[1],k)*k #(n,k)
+        # B =    np.ones_like(B)
         B = np.exp(B)/(np.exp(B).sum(1).reshape(-1,1))
         P =  np.random.rand(k,k*n_v) #(k,k*n_v)
+        # P =   np.ones_like(P)
         #loop
         for i in range(epoch):
             #update B
