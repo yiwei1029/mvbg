@@ -8,7 +8,13 @@ class MVBG:
         self.gamma = gamma
         self.beta = beta
 
-    def mvbg(self,w, X, Z,d_,epoch=500): #d_:embedding d; X is a list of (d_v,n)
+    def mvbg(self, X, m,d_,epoch=500): #d_:embedding d; X is a list of (d_v,n)
+        '''
+        m: anchor number
+        '''
+        w = np.array([1/len(X)]*len(X))
+        n = X[0].shape[1]
+        Z = np.full(shape=(m,n),fill_value=1/m)
         for i in range(epoch):
                 #step1: updating U_v
                         #(v,d_v,n)
@@ -29,7 +35,7 @@ class MVBG:
             h = [sum(h_v**2) for h_v in h]
             power = 1/(1-self.gamma)
             w = h**power/sum(h**power)
-        return F
+        return F.T
 
 
     def update_z(self,w,U, X, F,G,Z):
