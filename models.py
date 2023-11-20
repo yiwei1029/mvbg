@@ -14,16 +14,17 @@ class MVBG:
         '''
         w = np.array([1/len(X)]*len(X))
         n = X[0].shape[1]
-        Z = np.full(shape=(m,n),fill_value=1/m)
+        # Z = np.full(shape=(m,n),fill_value=1/m)
+        Z = np.random.rand(m,n)
+        Z = Z/Z.sum(1).reshape(-1,1)
         for i in range(epoch):
-                #step1: updating U_v
-                        #(v,d_v,n)
+            #step1: updating U_v=(d_v,m)
             v = len(w)
             U=[multi_dot([x,Z.T, np.linalg.inv(Z.dot(Z.T))]) for x in X]
             #step2: Updating E
-            D_F=np.diag(np.sum(axis=0))
-            D_G=np.diag(np.sum(axis=1))
-            A_temp = np.linalg.inv(np.sqrt(D_F)).dot(Z).dot(np.linalg.inv(np.sqrt(D_G))) #for SVD
+            D_F=np.diag(np.sum(Z,axis=0))
+            D_G=np.diag(np.sum(Z,axis=1))
+            A_temp = np.linalg.inv(np.sqrt(D_F)).dot(Z.T).dot(np.linalg.inv(np.sqrt(D_G))) #for SVD
             u_A,s_A,v_A =np.linalg.svd(A_temp)
             F = u_A[:,:d_]*np.sqrt(2)/2
             G = v_A[:d_,:].T*np.sqrt(2)/2
@@ -39,6 +40,7 @@ class MVBG:
 
 
     def update_z(self,w,U, X, F,G,Z):
+        # Z=(m,n)
         F_ii = np.diagonal(dist_2m_sq(F,F))
         G_ii = np.diagonal(dist_2m_sq(G,G))
         #
@@ -46,8 +48,8 @@ class MVBG:
         G_norm = G*1/G_ii.reshape(-1,1)
         d_FG = dist_2m_sq(F_norm,G_norm)
         # U=(v,d_v,m)
-        U_temp = sum(w**self.gamma*[u.T.dot(u) for u in U]) +self.alpha*np.identity(U[0].T.shape[0])
-        V = 2*sum(w**self.gamma*[X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
+        U_temp = sum(w[i]**self.gamma*[U[i].T.dot(U[i]) for i in range(len(w))]) +self.alpha*np.identity(U[0].T.shape[0])
+        V = 2*sum(w[i]**self.gamma*[X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
         # main step: Z=(m,n)
         #init mu and rho
         mu=np.random.rand()
@@ -59,15 +61,19 @@ class MVBG:
             #Fixing φ and solving zi
             k = 1/mu*(mu*phi-eta-U_temp.dot(phi)+V[i,:].T)
             #find lmda
-            for lmda in np.linspace(-np.abs(max(k)),np.abs(max(k)),10000):
-                z_i = np.where(k+lmda>=0,k+lmda,0)
-                if(np.abs(z_i.sum())<1e-3):
-                    break
+            # for lmda in np.linspace(-np.abs(max(k)),np.abs(max(k)),10000):
+            #     z_i = np.where(k+lmda>=0,k+lmda,0)
+            #     if(np.abs(z_i.sum())<1e-3):
+            #         break
+            lmda  = -np.mean(k)
+            z_i = np.where(k+lmda>0,k+lmda,0)
             
             eta = eta+mu*(z_i-phi)
             mu = rho*mu
 
-            Z[:,i]=z_i #
+            Z[:,i]=z_i 
+            Z = Z/Z.sum(1).reshape(-1,1)
+
 
 class PCA:
     def cpca(self,X,d_): #X: list of (d_v,n)
