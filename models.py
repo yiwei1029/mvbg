@@ -33,7 +33,7 @@ class MVBG:
             self.update_z(w,U, X, F,G,Z)
             #step4: Updating W
             h = [X[i]-U[i].dot(Z) for i in range(len(w))]
-            h = [sum(h_v**2) for h_v in h]
+            h = np.array([sum(h_v**2) for h_v in h])
             power = 1/(1-self.gamma)
             w = h**power/sum(h**power)
         return F.T
@@ -48,12 +48,13 @@ class MVBG:
         G_norm = G*1/G_ii.reshape(-1,1)
         d_FG = dist_2m_sq(F_norm,G_norm)
         # U=(v,d_v,m)
-        U_temp = sum(w[i]**self.gamma*[U[i].T.dot(U[i]) for i in range(len(w))]) +self.alpha*np.identity(U[0].T.shape[0])
-        V = 2*sum(w[i]**self.gamma*[X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
+        U_temp = sum([w[i]**self.gamma*U[i].T.dot(U[i]) for i in range(len(w))]) +self.alpha*np.identity(U[0].T.shape[0])
+        V = 2*sum([w[i]**self.gamma*X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
         # main step: Z=(m,n)
         #init mu and rho
         mu=np.random.rand()
         rho = np.random.rand()+1
+        eta =  np.random.rand()
         for i in range(Z.shape[1]):
 
             # Fixing z_i and solving φ
@@ -72,7 +73,7 @@ class MVBG:
             mu = rho*mu
 
             Z[:,i]=z_i 
-            Z = Z/Z.sum(1).reshape(-1,1)
+            # Z = Z/Z.sum(1).reshape(-1,1)
 
 
 class PCA:
@@ -138,7 +139,7 @@ class LPP_LE:
         return Y.T
     
     def predict(self,X_test, P):
-        return P.T.dot(X_test) 
+        return P.T.dot(np.concatenate(X_test)) 
 
 class MSE:
     def mse(self,X,gamma,d_,t,epoch =500):
