@@ -16,7 +16,7 @@ class MVBG:
         n = X[0].shape[1]
         # Z = np.full(shape=(m,n),fill_value=1/m)
         Z = np.random.rand(m,n)
-        Z = Z/Z.sum(1).reshape(-1,1)
+        # Z = Z/Z.sum(1).reshape(-1,1)
         for i in range(epoch):
             #step1: updating U_v=(d_v,m)
             v = len(w)
@@ -62,12 +62,11 @@ class MVBG:
             #Fixing φ and solving zi
             k = 1/mu*(mu*phi-eta-U_temp.dot(phi)+V[i,:].T)
             #find lmda
-            # for lmda in np.linspace(-np.abs(max(k)),np.abs(max(k)),10000):
-            #     z_i = np.where(k+lmda>=0,k+lmda,0)
-            #     if(np.abs(z_i.sum())<1e-3):
-            #         break
-            lmda  = -np.mean(k)
-            z_i = np.where(k+lmda>0,k+lmda,0)
+            for lmda in np.linspace(-np.abs(max(k)),np.abs(max(k)),len(k)*1000):
+                z_i = np.where(k+lmda>=0,k+lmda,0)
+                if(np.abs(z_i.sum()-1)<1e-3):
+                    break
+            
             
             eta = eta+mu*(z_i-phi)
             mu = rho*mu
