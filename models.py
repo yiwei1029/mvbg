@@ -30,29 +30,31 @@ class MVBG:
             G = v_A[:d_,:].T*np.sqrt(2)/2
             E = np.concatenate([F,G])
             #step3: Updating Z
-            self.update_z(w,U, X, F,G,Z)
+            self.update_z(w,U, X,D_F,D_G, F,G,Z)
             #step4: Updating W
-            h = [X[i]-U[i].dot(Z) for i in range(len(w))]
-            h = np.array([sum(h_v**2) for h_v in h])
+            h = [np.linalg.norm(X[i]-U[i].dot(Z)) for i in range(len(w))]
+            # h = np.array([sum(h_v**2) for h_v in h])
             power = 1/(1-self.gamma)
             w = h**power/sum(h**power)
+            print(w)
         return F.T
 
 
-    def update_z(self,w,U, X, F,G,Z):
+    def update_z(self,w,U, X, D_F,D_G,F,G,Z):
         # Z=(m,n)
-        F_ii = np.diagonal(dist_2m_sq(F,F))
-        G_ii = np.diagonal(dist_2m_sq(G,G))
+        # dF_ii = np.diagonal(dist_2m_sq(F,F))
+        # dG_ii = np.diagonal(dist_2m_sq(G,G))
+    
         #
-        F_norm = F*1/F_ii.reshape(-1,1)
-        G_norm = G*1/G_ii.reshape(-1,1)
+        F_norm = F/np.diagonal(D_F).reshape(-1,1)
+        G_norm = G/np.diagonal(D_G).reshape(-1,1)
         d_FG = dist_2m_sq(F_norm,G_norm)
         # U=(v,d_v,m)
         U_temp = sum([w[i]**self.gamma*U[i].T.dot(U[i]) for i in range(len(w))]) +self.alpha*np.identity(U[0].T.shape[0])
         V = 2*sum([w[i]**self.gamma*X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
         # main step: Z=(m,n)
         #init mu and rho
-        mu=np.random.rand()
+        mu = np.random.rand()+0.01
         rho = np.random.rand()+1
         eta =  np.random.rand()
         for i in range(Z.shape[1]):
@@ -61,10 +63,11 @@ class MVBG:
             phi = Z[:,i]+1/mu*(eta-U_temp.T.dot(Z[:,i]))
             #Fixing φ and solving zi
             k = 1/mu*(mu*phi-eta-U_temp.dot(phi)+V[i,:].T)
+            # print(i,U_temp)
             #find lmda
-            for lmda in np.linspace(-np.abs(max(k)),np.abs(max(k)),len(k)*1000):
+            for lmda in np.linspace(-np.abs(max(k))-1/len(k),np.abs(max(k))+1/len(k),len(k)*1000):
                 z_i = np.where(k+lmda>=0,k+lmda,0)
-                if(np.abs(z_i.sum()-1)<1e-3):
+                if(np.abs(z_i.sum()-1)<1/1000):
                     break
             
             
@@ -73,6 +76,7 @@ class MVBG:
 
             Z[:,i]=z_i 
             # Z = Z/Z.sum(1).reshape(-1,1)
+            # print(i,Z)
 
 
 class PCA:
