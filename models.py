@@ -2,6 +2,7 @@ import numpy as np
 from numpy.linalg import multi_dot
 from sklearn import manifold
 from utils import *
+from tqdm import tqdm
 class MVBG:
     def __init__(self,alpha,gamma,beta):
         self.alpha = alpha
@@ -17,7 +18,7 @@ class MVBG:
         # Z = np.full(shape=(m,n),fill_value=1/m)
         Z = np.random.rand(m,n)
         # Z = Z/Z.sum(1).reshape(-1,1)
-        for i in range(epoch):
+        for i in tqdm(range(epoch)):
             #step1: updating U_v=(d_v,m)
             v = len(w)
             U=[multi_dot([x,Z.T, np.linalg.inv(Z.dot(Z.T))]) for x in X]
@@ -33,6 +34,7 @@ class MVBG:
             self.update_z(w,U, X,D_F,D_G, F,G,Z)
             #step4: Updating W
             h = [np.linalg.norm(X[i]-U[i].dot(Z)) for i in range(len(w))]
+            h = np.array(h)
             # h = np.array([sum(h_v**2) for h_v in h])
             power = 1/(1-self.gamma)
             w = h**power/sum(h**power)
