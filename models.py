@@ -86,10 +86,19 @@ class PCA:
         idx = np.argpartition(eigenval,-d_)[-d_:]
         select_vec = eigenvec[:,idx]
         out = select_vec.T.dot(X)
-        return out
-
+        return select_vec
+    def predict(self,X_test,P,n_clusters,cpca=True):
+        if cpca:
+            dim_emb  = P.T.dot(np.concatenate(X_test))
+            
+        else:
+            temp = [ P[i].T.dot(X_test[i]) for i in len(X_test)]
+            dim_emb =  sum(temp)/len(temp)
+        pred = kmeans(dim_emb,n_clusters)
+        return pred
     def dpca(self,X,d_):
         dim_reductions =[]
+        P  = []
         for x in X:
             x = x-x.mean(axis=1).reshape(-1,1)
             cov_x = x.dot(x.T)
@@ -100,7 +109,8 @@ class PCA:
             select_vec = eigenvec[:,idx]
             out = select_vec.T.dot(x)
             dim_reductions.append(out)
-        return sum(dim_reductions)/len(dim_reductions)
+            P.append(select_vec)
+        return P
 
 class LPP_LE:
     def lpp(self,X,t,d_):
@@ -118,12 +128,17 @@ class LPP_LE:
         eigval, eigvec = np.linalg.eig(cov)
         idx = np.argpartition(eigval, d_)[:d_]
         selected_vec = eigvec[:,idx]
-        return selected_vec.T.dot(X)
+        return selected_vec
+    
+
     def le(self,X,d_,n_neighbors):
         X = np.concatenate(X)
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
         Y = se.fit_transform(X.T)
         return Y.T
+    
+    def predict(self,X_test, P):
+        return P.T.dot(X_test) 
 
 class MSE:
     def mse(self,X,gamma,d_,t,epoch =500):
@@ -154,7 +169,7 @@ class MSE:
         return Y
     
 class MDcR:
-    def mdcr_train(self,X,d_,t,lmd,epoch =500):
+    def mdcr(self,X,d_,t,lmd,epoch =500):
         n_v = len(X)
         W =  []
         P=[]
