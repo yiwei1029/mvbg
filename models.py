@@ -154,7 +154,7 @@ class MSE:
         return Y
     
 class MDcR:
-    def mdcr(self,X,d_,t,lmd,epoch =500):
+    def mdcr_train(self,X,d_,t,lmd,epoch =500):
         n_v = len(X)
         W =  []
         P=[]
@@ -189,8 +189,13 @@ class MDcR:
                 selected_vec = eig_selection(cov,d_,True)
                 P[v] = selected_vec
         
-        return sum([ P[v].T.dot(X[v])for v in range(n_v) ])
-
+        return P
+    
+    def predict(self,X_test,P,n_clusters):
+        n_v = len(X_test)
+        dim_emb =   sum([ P[v].T.dot(X_test[v])for v in range(n_v) ])
+        pred = kmeans(dim_emb,n_clusters)
+        return pred
 class DSE:
     def dse(self,X,k,alpha,epoch =500):
         A_list=[]
