@@ -9,7 +9,7 @@ class MVBG:
         self.gamma = gamma
         self.beta = beta
 
-    def mvbg(self, X, m,d_,epoch=500): #d_:embedding d; X is a list of (d_v,n)
+    def mvbg(self, X, m,d_,t,epoch): #d_:embedding d; X is a list of (d_v,n)
         '''
         m: anchor number
         '''
@@ -18,7 +18,7 @@ class MVBG:
         # Z = np.full(shape=(m,n),fill_value=1/m)
         Z = np.random.rand(m,n)
         # Z = Z/Z.sum(1).reshape(-1,1)
-        for i in tqdm(range(epoch)):
+        for i in range(epoch):
             #step1: updating U_v=(d_v,m)
             v = len(w)
             U=[multi_dot([x,Z.T, np.linalg.inv(Z.dot(Z.T))]) for x in X]
@@ -31,18 +31,22 @@ class MVBG:
             G = v_A[:d_,:].T*np.sqrt(2)/2
             E = np.concatenate([F,G])
             #step3: Updating Z
-            self.update_z(w,U, X,D_F,D_G, F,G,Z)
+            self.update_z(w,U, X,D_F,D_G, F,G,Z,t)
             #step4: Updating W
             h = [np.linalg.norm(X[i]-U[i].dot(Z)) for i in range(len(w))]
             h = np.array(h)
             # h = np.array([sum(h_v**2) for h_v in h])
             power = 1/(1-self.gamma)
             w = h**power/sum(h**power)
-            print(w)
         return F.T
 
-
-    def update_z(self,w,U, X, D_F,D_G,F,G,Z):
+    def predict(self,X, m,d_,n_clusters,t,epoch):
+        P = self.mvbg(X, m,d_,t,epoch)
+        prob = kmeans(P,n_clusters)
+        return prob
+    
+    # @cost_time
+    def update_z(self,w,U, X, D_F,D_G,F,G,Z,t):
         # Z=(m,n)
         # dF_ii = np.diagonal(dist_2m_sq(F,F))
         # dG_ii = np.diagonal(dist_2m_sq(G,G))
@@ -50,7 +54,7 @@ class MVBG:
         #
         F_norm = F/np.diagonal(D_F).reshape(-1,1)
         G_norm = G/np.diagonal(D_G).reshape(-1,1)
-        d_FG = dist_2m_sq(F_norm,G_norm)
+        d_FG = cal_rbf_dist(F_norm,G_norm,n_neighbors=10,t=t)
         # U=(v,d_v,m)
         U_temp = sum([w[i]**self.gamma*U[i].T.dot(U[i]) for i in range(len(w))]) +self.alpha*np.identity(U[0].T.shape[0])
         V = 2*sum([w[i]**self.gamma*X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
@@ -67,11 +71,11 @@ class MVBG:
             k = 1/mu*(mu*phi-eta-U_temp.dot(phi)+V[i,:].T)
             # print(i,U_temp)
             #find lmda
-            for lmda in np.linspace(-np.abs(max(k))-1/len(k),np.abs(max(k))+1/len(k),len(k)*1000):
-                z_i = np.where(k+lmda>=0,k+lmda,0)
-                if(np.abs(z_i.sum()-1)<1/1000):
-                    break
-            
+            # for lmda in np.linspace(-np.abs(max(k))-1/len(k),np.abs(max(k))+1/len(k),len(k)*1000):
+            #     z_i = np.where(k+lmda>=0,k+lmda,0)
+            #     if(np.abs(z_i.sum()-1)<1/1000):
+            #         break
+            z_i = np.exp(k/np.max(k))/sum(np.exp(k/np.max(k)))
             
             eta = eta+mu*(z_i-phi)
             mu = rho*mu

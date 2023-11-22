@@ -1,4 +1,5 @@
 import math
+import time
 import numpy as np
 def dist_2m_sq(A,B):
     #assume A=(n,d_),B=(m,d_),expand A=>(n,m,d_),B=>(n,m,d_)
@@ -71,3 +72,10 @@ def random_index(n,train_ratio):
     train_idx = np.random.choice(sample_idx,size=train_size,replace=False)
     test_idx = np.array(list(set(sample_idx) - set(train_idx)))
     return train_idx,test_idx
+
+def cost_time(func):
+    def fun(*args, **kwargs):
+        t = time.perf_counter()
+        result = func(*args, **kwargs)
+        print(f'func {func.__name__} cost time:{time.perf_counter() - t:.8f} s')
+        return result
