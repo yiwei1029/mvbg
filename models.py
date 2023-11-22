@@ -3,6 +3,8 @@ from numpy.linalg import multi_dot
 from sklearn import manifold
 from utils import *
 from tqdm import tqdm
+import numpy.linalg as LA
+
 class MVBG:
     def __init__(self,alpha,gamma,beta):
         self.alpha = alpha
@@ -45,7 +47,6 @@ class MVBG:
         prob = kmeans(P,n_clusters)
         return prob
     
-    # @cost_time
     def update_z(self,w,U, X, D_F,D_G,F,G,Z,t):
         # Z=(m,n)
         # dF_ii = np.diagonal(dist_2m_sq(F,F))
@@ -122,6 +123,7 @@ class PCA:
             P.append(select_vec)
         return P
 
+
 class LPP_LE:
     def lpp(self,X,t,d_):
         '''
@@ -140,7 +142,6 @@ class LPP_LE:
         selected_vec = eigvec[:,idx]
         return selected_vec
     
-
     def le(self,X,d_,n_neighbors):
         X = np.concatenate(X)
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
@@ -178,6 +179,7 @@ class MSE:
             alpha = alpha/sum(alpha)
         return Y
     
+
 class MDcR:
     def mdcr(self,X,d_,t,lmd,epoch =500):
         n_v = len(X)
@@ -197,7 +199,6 @@ class MDcR:
             P.append(selected_vec)
         
         #loop
-        
         for i in range(epoch):
             Z = [ P[v].T.dot(X[v])for v in range(n_v) ]
             K = [z.T.dot(z) for z in Z]
@@ -213,7 +214,6 @@ class MDcR:
                 cov = (A+lmd*B)
                 selected_vec = eig_selection(cov,d_,True)
                 P[v] = selected_vec
-        
         return P
     
     def predict(self,X_test,P,n_clusters):
@@ -221,6 +221,8 @@ class MDcR:
         dim_emb =   sum([ P[v].T.dot(X_test[v])for v in range(n_v) ])
         pred = kmeans(dim_emb,n_clusters)
         return pred
+    
+
 class DSE:
     def dse(self,X,k,alpha,epoch =500):
         A_list=[]
@@ -248,7 +250,7 @@ class DSE:
             b = B.argmax(1)
         return b
 
-import numpy.linalg as LA
+
 class MVP:
     def mvp(self,X,r,alpha,t,d_,epoch=500):
         '''
@@ -288,6 +290,7 @@ class MVP:
               .dot(np.linalg.inv(np.sqrt(D[i]))) for i in range(n_v)]
             L_sum = sum([alpha*w[i]*L[i]  for  i in range(n_v)])
         return U
+    
     def predict(self,X,r,alpha,t,d_,n_clusters,epoch=500):
         Y = self.mvp(X,r,alpha,t,d_,epoch=500)
         probs = kmeans(Y.T,n_clusters)
