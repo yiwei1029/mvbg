@@ -243,3 +243,48 @@ class DSE:
             P = P*block3/block4
             b = B.argmax(1)
         return b
+
+import numpy.linalg as LA
+class MVP:
+    def mvp(self,X,r,alpha,t,d_,epoch=500):
+        '''
+        t for rbf
+        x: (n,d)
+        '''
+        n_v = len(X)
+        X  = [x.T for x in X]
+        w = np.array([1/n_v]*n_v)
+        W =  []
+        for x in X:
+            W.append(cal_rbf_dist(x,x,70,t=t))
+        D = [np.diag(w.sum(1))  for w in W]
+        L =  [np.identity(D[i].shape[0])-np.linalg.inv(np.sqrt(D[i])).dot(W[i])\
+              .dot(np.linalg.inv(np.sqrt(D[i]))) for i in range(n_v)]
+        L_sum = sum([alpha*w[i]*L[i]  for  i in range(n_v)])
+        
+        A  = [x.dot(np.linalg.inv(x.T.dot(x))).dot(x.T) for x in X]
+        A  = [x.dot(x.T) for x in X]
+
+        A_coef = [np.abs(np.diag(a.sum(1))/np.max(a)) for a in A]
+        delta_star = [LA.inv(np.sqrt(A_coef[i])).dot(A[i])\
+                      .dot(LA.inv(np.sqrt(A_coef[i]))) for i in range(n_v)]
+        delta = [np.identity(delta_star[0].shape[0])-d_s for d_s in delta_star]
+        delta_sum = sum(delta)
+        
+        for i in range(epoch):
+            #update U
+            cov =  delta_sum+L_sum
+            U = eig_selection(cov,d_,False)
+            #update w
+            up = [(1/np.trace(U.T.dot(L[i]).dot(U) ) )**(1/r-1)   for i in range(n_v)]
+            down =  sum(up)
+            w = up/down
+            #update L_sum
+            L =  [np.identity(D[i].shape[0])-np.linalg.inv(np.sqrt(D[i])).dot(W[i])\
+              .dot(np.linalg.inv(np.sqrt(D[i]))) for i in range(n_v)]
+            L_sum = sum([alpha*w[i]*L[i]  for  i in range(n_v)])
+        return U
+    def predict(self,X,r,alpha,t,d_,n_clusters,epoch=500):
+        Y = self.mvp(X,r,alpha,t,d_,epoch=500)
+        probs = kmeans(Y.T,n_clusters)
+        return probs
