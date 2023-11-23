@@ -150,7 +150,7 @@ class LPP:
         L  = D-W
         lhs = X.dot(L).dot(X.T)
         rhs = X.dot(D).dot(X.T)
-        cov = np.linalg.inv(rhs).dot(lhs)
+        cov = np.linalg.pinv(rhs).dot(lhs)
         eigval, eigvec = np.linalg.eig(cov)
         eigenval = np.real(eigenval)
         eigenvec = np.real(eigenvec)
@@ -166,6 +166,8 @@ class LPP:
     
 
 class LE:
+    def __init__(self) -> None:
+        self.name =    'LE'
     def le(self,X,d_,n_neighbors):
         X = np.concatenate(X)
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
@@ -173,11 +175,13 @@ class LE:
         return Y.T #(d_,n)
     
     def predict(self,X_train,X_test, d_,n_neighbors,k):
-        dim_emb =  self.le(X_train,d_,n_neighbors)
+        dim_emb =  self.le(X_test,d_,n_neighbors)
         pred = kmeans(dim_emb,k)
         return pred
 
 class MSE:
+    def __init__(self) -> None:
+        self.name='MSE'
     def mse(self,X,gamma,d_,t,epoch =500):
         '''
         MSE ALgorithm \n
@@ -211,6 +215,9 @@ class MSE:
 
 
 class MDcR:
+    def __init__(self) -> None:
+        
+        self.name   = 'MDcR'
     def mdcr(self,X,d_,t,lmd,epoch =500):
         n_v = len(X)
         W =  []
@@ -255,6 +262,8 @@ class MDcR:
     
 
 class DSE:
+    def __init__(self) -> None:
+        self.name  = 'DSE'
     def dse(self,X,k,alpha,epoch =500):
         A_list=[]
         n_v= len(X)
@@ -283,6 +292,8 @@ class DSE:
 
 
 class MVP:
+    def __init__(self) -> None:
+        self.name=   "MVP"
     def mvp(self,X,r,alpha,t,d_,epoch=500):
         '''
         t for rbf
@@ -299,8 +310,8 @@ class MVP:
               .dot(np.linalg.inv(np.sqrt(D[i]))) for i in range(n_v)]
         L_sum = sum([alpha*w[i]*L[i]  for  i in range(n_v)])
         
-        A  = [x.dot(np.linalg.inv(x.T.dot(x))).dot(x.T) for x in X]
-        A  = [x.dot(x.T) for x in X]
+        A  = [x.dot(np.linalg.pinv(x.T.dot(x))).dot(x.T) for x in X]
+        # A  = [x.dot(x.T) for x in X]
 
         A_coef = [np.abs(np.diag(a.sum(1))/np.max(a)) for a in A]
         delta_star = [LA.inv(np.sqrt(A_coef[i])).dot(A[i])\
