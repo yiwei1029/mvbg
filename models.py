@@ -1,3 +1,4 @@
+from colorama import init
 import numpy as np
 from numpy.linalg import multi_dot
 from sklearn import manifold
@@ -65,7 +66,6 @@ class MVBG:
         rho = np.random.rand()+1
         eta =  np.random.rand()
         for i in range(Z.shape[1]):
-
             # Fixing z_i and solving φ
             phi = Z[:,i]+1/mu*(eta-U_temp.T.dot(Z[:,i]))
             #Fixing φ and solving zi
@@ -77,15 +77,16 @@ class MVBG:
             #     if(np.abs(z_i.sum()-1)<1/1000):
             #         break
             z_i = np.exp(k/np.max(k))/sum(np.exp(k/np.max(k)))
-            
+
             eta = eta+mu*(z_i-phi)
             mu = rho*mu
-
             Z[:,i]=z_i 
             # Z = Z/Z.sum(1).reshape(-1,1)
             # print(i,Z)
 
 class DPCA:
+    def __init__(self) -> None:
+        self.name =   'DPCA'
     def dpca(self,X,d_):
         dim_reductions =[]
         P  = []
@@ -101,10 +102,14 @@ class DPCA:
             dim_reductions.append(out)
             P.append(select_vec)
         return P
-    def predict(self,X_test,d_,P,k):
+    def predict(self,X_train,X_test,d_,k):
+        P =self.dpca(X_train,d_)
         temp = [ P[i].T.dot(X_test[i]) for i in range(len(X_test))]
         dim_emb =  sum(temp)/len(temp)
-        pass
+        pred = kmeans(dim_emb,k)
+        return pred
+
+    
 class CPCA:
     def cpca(self,X,d_): #X: list of (d_v,n)
         X = np.concatenate(X)
