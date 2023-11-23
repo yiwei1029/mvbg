@@ -97,16 +97,19 @@ class PCA:
         idx = np.argpartition(eigenval,-d_)[-d_:]
         select_vec = eigenvec[:,idx]
         out = select_vec.T.dot(X)
+        print(select_vec)
         return select_vec
+    
     def predict(self,X_test,P,n_clusters,cpca=True):
         if cpca:
             dim_emb  = P.T.dot(np.concatenate(X_test))
             
         else:
-            temp = [ P[i].T.dot(X_test[i]) for i in len(X_test)]
+            temp = [ P[i].T.dot(X_test[i]) for i in range(len(X_test))]
             dim_emb =  sum(temp)/len(temp)
         pred = kmeans(dim_emb,n_clusters)
         return pred
+    
     def dpca(self,X,d_):
         dim_reductions =[]
         P  = []
