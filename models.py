@@ -85,31 +85,7 @@ class MVBG:
             # Z = Z/Z.sum(1).reshape(-1,1)
             # print(i,Z)
 
-
-class PCA:
-    def cpca(self,X,d_): #X: list of (d_v,n)
-        X = np.concatenate(X)
-        X = X-X.mean(axis=1).reshape(-1,1)
-        cov_X = X.dot(X.T)
-        eigenval,eigenvec = np.linalg.eig(cov_X)
-        eigenval = np.real(eigenval)
-        eigenvec = np.real(eigenvec)    
-        idx = np.argpartition(eigenval,-d_)[-d_:]
-        select_vec = eigenvec[:,idx]
-        out = select_vec.T.dot(X)
-        print(select_vec)
-        return select_vec
-    
-    def predict(self,X_test,P,n_clusters,cpca=True):
-        if cpca:
-            dim_emb  = P.T.dot(np.concatenate(X_test))
-            
-        else:
-            temp = [ P[i].T.dot(X_test[i]) for i in range(len(X_test))]
-            dim_emb =  sum(temp)/len(temp)
-        pred = kmeans(dim_emb,n_clusters)
-        return pred
-    
+class DPCA:
     def dpca(self,X,d_):
         dim_reductions =[]
         P  = []
@@ -125,9 +101,35 @@ class PCA:
             dim_reductions.append(out)
             P.append(select_vec)
         return P
+    def predict(self,X_test,d_,P,k):
+        temp = [ P[i].T.dot(X_test[i]) for i in range(len(X_test))]
+        dim_emb =  sum(temp)/len(temp)
+        pass
+class CPCA:
+    def cpca(self,X,d_): #X: list of (d_v,n)
+        X = np.concatenate(X)
+        X = X-X.mean(axis=1).reshape(-1,1)
+        cov_X = X.dot(X.T)
+        eigenval,eigenvec = np.linalg.eig(cov_X)
+        eigenval = np.real(eigenval)
+        eigenvec = np.real(eigenvec)    
+        idx = np.argpartition(eigenval,-d_)[-d_:]
+        select_vec = eigenvec[:,idx]
+        out = select_vec.T.dot(X)
+        print(select_vec)
+        return select_vec
+  
+    def predict(self,X_test,d_,P,n_clusters,cpca=True):
+        P = self.cpca(X_test,d_)
+        dim_emb  = P.T.dot(np.concatenate(X))
+            
+        
+
+        pred = kmeans(dim_emb,n_clusters)
+        return pred
 
 
-class LPP_LE:
+class LPP:
     def lpp(self,X,t,d_):
         '''
         Locality Preserving Projection \n
@@ -144,14 +146,19 @@ class LPP_LE:
         idx = np.argpartition(eigval, d_)[:d_]
         selected_vec = eigvec[:,idx]
         return selected_vec
-    
+    def predict(self,X_test, P,n_clusters,n_neighbors,d_):
+
+        dim_emb =  P.T.dot(np.concatenate(X_test)) 
+        prob = kmeans(dim_emb,n_clusters=n_clusters)
+        return prob
+class LE:
     def le(self,X,d_,n_neighbors):
         X = np.concatenate(X)
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
         Y = se.fit_transform(X.T) # direct ouput dim_emb
         return Y #(n,d_)
     
-    def predict(self,X_test, P,n_clusters,n_neighbors,d_,le = True):
+    def predict(self,X_test, P,n_clusters,n_neighbors,d_):
         if le:
             dim_emb  = self.le(X_test,d_,n_neighbors).T
         else:
