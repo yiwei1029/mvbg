@@ -136,6 +136,8 @@ class CPCA:
 
 
 class LPP:
+    def __init__(self) -> None:
+        self.name =   'LPP'
     def lpp(self,X,t,d_):
         '''
         Locality Preserving Projection \n
@@ -149,28 +151,30 @@ class LPP:
         rhs = X.dot(D).dot(X.T)
         cov = np.linalg.inv(rhs).dot(lhs)
         eigval, eigvec = np.linalg.eig(cov)
+        eigenval = np.real(eigenval)
+        eigenvec = np.real(eigenvec)
         idx = np.argpartition(eigval, d_)[:d_]
         selected_vec = eigvec[:,idx]
         return selected_vec
-    def predict(self,X_test, P,n_clusters,n_neighbors,d_):
-
+    
+    def predict(self,X_train,X_test,t,d_,k):
+        P = self.lpp(X_train,t,d_)
         dim_emb =  P.T.dot(np.concatenate(X_test)) 
-        prob = kmeans(dim_emb,n_clusters=n_clusters)
-        return prob
+        pred = kmeans(dim_emb,k)
+        return pred
     
-    
+
 class LE:
     def le(self,X,d_,n_neighbors):
         X = np.concatenate(X)
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
         Y = se.fit_transform(X.T) # direct ouput dim_emb
-        return Y #(n,d_)
+        return Y.T #(d_,n)
     
-    def predict(self,X_test, P,n_clusters,n_neighbors,d_):
-
-        dim_emb =  P.T.dot(np.concatenate(X_test)) 
-        prob = kmeans(dim_emb,n_clusters=n_clusters)
-        return prob
+    def predict(self,X_train,X_test, d_,n_neighbors,k):
+        dim_emb =  self.le(X_train,d_,n_neighbors)
+        pred = kmeans(dim_emb,k)
+        return pred
 
 class MSE:
     def mse(self,X,gamma,d_,t,epoch =500):
