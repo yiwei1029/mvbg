@@ -111,6 +111,8 @@ class DPCA:
 
     
 class CPCA:
+    def __init__(self) -> None:
+        self.name =  'CPCA'
     def cpca(self,X,d_): #X: list of (d_v,n)
         X = np.concatenate(X)
         X = X-X.mean(axis=1).reshape(-1,1)
@@ -121,16 +123,15 @@ class CPCA:
         idx = np.argpartition(eigenval,-d_)[-d_:]
         select_vec = eigenvec[:,idx]
         out = select_vec.T.dot(X)
-        print(select_vec)
         return select_vec
   
-    def predict(self,X_test,d_,P,n_clusters,cpca=True):
-        P = self.cpca(X_test,d_)
-        dim_emb  = P.T.dot(np.concatenate(X))
-            
-        
-
-        pred = kmeans(dim_emb,n_clusters)
+    def predict(self,X_train,X_test,d_,k):
+        '''
+        k: n clusters
+        '''
+        P = self.cpca(X_train,d_)
+        dim_emb  = P.T.dot(np.concatenate(X_test))
+        pred = kmeans(dim_emb,k)
         return pred
 
 
@@ -156,6 +157,8 @@ class LPP:
         dim_emb =  P.T.dot(np.concatenate(X_test)) 
         prob = kmeans(dim_emb,n_clusters=n_clusters)
         return prob
+    
+    
 class LE:
     def le(self,X,d_,n_neighbors):
         X = np.concatenate(X)
@@ -164,10 +167,8 @@ class LE:
         return Y #(n,d_)
     
     def predict(self,X_test, P,n_clusters,n_neighbors,d_):
-        if le:
-            dim_emb  = self.le(X_test,d_,n_neighbors).T
-        else:
-            dim_emb =  P.T.dot(np.concatenate(X_test)) 
+
+        dim_emb =  P.T.dot(np.concatenate(X_test)) 
         prob = kmeans(dim_emb,n_clusters=n_clusters)
         return prob
 
