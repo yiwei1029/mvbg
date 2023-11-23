@@ -144,23 +144,27 @@ class LPP:
         X: list of (d_v,n)
         nn: n_neigbors
         '''
-        X = np.concatenate(X)
-        W = cal_rbf_dist(X.T,X.T,nn,t) #X here should be (n,d)
-        D = np.diag(W.sum(1))
-        L  = D-W
-        lhs = X.dot(L).dot(X.T)
-        rhs = X.dot(D).dot(X.T)
-        cov = np.linalg.pinv(rhs).dot(lhs)
-        eigval, eigvec = np.linalg.eig(cov)
-        eigenval = np.real(eigenval)
-        eigenvec = np.real(eigenvec)
-        idx = np.argpartition(eigval, d_)[:d_]
-        selected_vec = eigvec[:,idx]
-        return selected_vec
+        
+        # X = np.concatenate(X)
+        P  = []
+        for x in X:
+            W = cal_rbf_dist(x.T,x.T,nn,t) #X here should be (n,d)
+            D = np.diag(W.sum(1))
+            L  = D-W
+            lhs = x.dot(L).dot(x.T)
+            rhs = x.dot(D).dot(x.T)
+            cov = np.linalg.pinv(rhs).dot(lhs)
+            eigval, eigvec = np.linalg.eig(cov)
+            eigval = np.real(eigval)
+            eigvec = np.real(eigvec)
+            idx = np.argpartition(eigval, d_)[:d_]
+            selected_vec = eigvec[:,idx]
+            P.append(selected_vec)
+        return P
     
     def predict(self,X_train,X_test,t,d_,k,nn=100):
         P = self.lpp(X_train,t,d_,nn)
-        dim_emb =  P.T.dot(np.concatenate(X_test)) 
+        dim_emb = sum([P[i].T.dot(X_test[i]) for i in range(len(X_test))])
         pred = kmeans(dim_emb,k)
         return pred
     
