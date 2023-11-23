@@ -138,13 +138,14 @@ class CPCA:
 class LPP:
     def __init__(self) -> None:
         self.name =   'LPP'
-    def lpp(self,X,t,d_):
+    def lpp(self,X,t,d_,nn):
         '''
         Locality Preserving Projection \n
         X: list of (d_v,n)
+        nn: n_neigbors
         '''
         X = np.concatenate(X)
-        W = cal_rbf_dist(X.T,X.T,10,t) #X here should be (n,d)
+        W = cal_rbf_dist(X.T,X.T,nn,t) #X here should be (n,d)
         D = np.diag(W.sum(1))
         L  = D-W
         lhs = X.dot(L).dot(X.T)
@@ -157,8 +158,8 @@ class LPP:
         selected_vec = eigvec[:,idx]
         return selected_vec
     
-    def predict(self,X_train,X_test,t,d_,k):
-        P = self.lpp(X_train,t,d_)
+    def predict(self,X_train,X_test,t,d_,k,nn=100):
+        P = self.lpp(X_train,t,d_,nn)
         dim_emb =  P.T.dot(np.concatenate(X_test)) 
         pred = kmeans(dim_emb,k)
         return pred
