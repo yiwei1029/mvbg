@@ -148,11 +148,16 @@ class LPP_LE:
     def le(self,X,d_,n_neighbors):
         X = np.concatenate(X)
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
-        Y = se.fit_transform(X.T)
-        return Y.T
+        Y = se.fit_transform(X.T) # direct ouput dim_emb
+        return Y #(n,d_)
     
-    def predict(self,X_test, P):
-        return P.T.dot(np.concatenate(X_test)) 
+    def predict(self,X_test, P,n_clusters,n_neighbors,d_,le = True):
+        if le:
+            dim_emb  = self.le(X_test,d_,n_neighbors).T
+        else:
+            dim_emb =  P.T.dot(np.concatenate(X_test)) 
+        prob = kmeans(dim_emb,n_clusters=n_clusters)
+        return prob
 
 class MSE:
     def mse(self,X,gamma,d_,t,epoch =500):
