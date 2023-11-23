@@ -204,7 +204,11 @@ class MSE:
             alpha =  [1/np.trace(Y.dot(L[i]).dot(Y.T)) for i in range(n_v)]
             alpha = alpha/sum(alpha)
         return Y
-    
+    def predict(self,X,gamma,d_,t,k,epoch =500):
+        dim_emb   = self.mse(X,gamma,d_,t,epoch)
+        pred =  kmeans(dim_emb,k)
+        return pred
+
 
 class MDcR:
     def mdcr(self,X,d_,t,lmd,epoch =500):
@@ -242,10 +246,11 @@ class MDcR:
                 P[v] = selected_vec
         return P
     
-    def predict(self,X_test,P,n_clusters):
-        n_v = len(X_test)
-        dim_emb =   sum([ P[v].T.dot(X_test[v])for v in range(n_v) ])
-        pred = kmeans(dim_emb,n_clusters)
+    def predict(self,X,d_,t,lmd,nn,epoch=500):
+        P = self.mdcr(X,d_,t,lmd,epoch)
+        n_v = len(X)
+        dim_emb = sum([ P[v].T.dot(X[v])for v in range(n_v) ])
+        pred = kmeans(dim_emb,nn)
         return pred
     
 
@@ -317,7 +322,7 @@ class MVP:
             L_sum = sum([alpha*w[i]*L[i]  for  i in range(n_v)])
         return U
     
-    def predict(self,X,r,alpha,t,d_,n_clusters,epoch=500):
-        Y = self.mvp(X,r,alpha,t,d_,epoch=500)
-        probs = kmeans(Y.T,n_clusters)
-        return probs
+    def predict(self,X,r,alpha,t,d_,k,epoch=500):
+        dim_emb = self.mvp(X,r,alpha,t,d_,epoch).T
+        pred = kmeans(dim_emb,k)
+        return pred
