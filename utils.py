@@ -82,7 +82,7 @@ def cost_time(func):
         print(f'func {func.__name__} cost time:{time.perf_counter() - t:.8f} s')
         return result
 
-def acc(y_true, y_pred):
+def acc_score(y_true, y_pred):
     """
     Calculate clustering accuracy. Require scikit-learn installed
     # Arguments
