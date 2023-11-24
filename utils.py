@@ -1,6 +1,8 @@
 import math
 import time
 import numpy as np
+from scipy.optimize import linear_sum_assignment
+
 def dist_2m_sq(A,B):
     #assume A=(n,d_),B=(m,d_),expand A=>(n,m,d_),B=>(n,m,d_)
     n = A.shape[0]
@@ -79,3 +81,22 @@ def cost_time(func):
         result = func(*args, **kwargs)
         print(f'func {func.__name__} cost time:{time.perf_counter() - t:.8f} s')
         return result
+
+def acc(y_true, y_pred):
+    """
+    Calculate clustering accuracy. Require scikit-learn installed
+    # Arguments
+        y: true labels, numpy.array with shape `(n_samples,)`
+        y_pred: predicted labels, numpy.array with shape `(n_samples,)`
+    # Return
+        accuracy, in [0,1]
+    """
+    y_true = y_true.astype(np.int64)
+    assert y_pred.size == y_true.size
+    D = max(y_pred.max(), y_true.max()) + 1
+    w = np.zeros((D, D), dtype=np.int64)
+    for i in range(y_pred.size):
+        w[y_pred[i], y_true[i]] += 1
+    ind = linear_sum_assignment(w.max() - w)
+    ind = np.array(ind).T
+    return sum([w[i, j] for i, j in ind]) * 1.0 / y_pred.size
