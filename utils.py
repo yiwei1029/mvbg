@@ -24,13 +24,13 @@ def read_data(filename):
 
 def cal_rbf_dist(A,B,n_neighbors,t):
     dist = dist_2m_sq(A,B)
-    N =dist.shape[0]
-    W = np.zeros((N,N))
-    for i in range(N):
+    M,N =dist.shape
+    W = np.zeros((M,N))
+    for i in range(M):
         idx = np.argsort(dist[i])[1:1+n_neighbors]
         W[i,idx] = np.exp(-1/t*dist[i][idx])
         # W[idx,i] = np.exp(-1/t*dist[idx][i])
-        W[idx,i]= W[i,idx]
+        # W[idx,i]= W[i,idx]
     return W
 
 def eig_selection(cov,d_ ,top = True):
