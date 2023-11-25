@@ -173,13 +173,14 @@ class LE:
     def __init__(self) -> None:
         self.name =    'LE'
     def le(self,X,d_,n_neighbors):
-        X = np.concatenate(X)
+        # X = np.concatenate(X)
         se = manifold.SpectralEmbedding(n_components=d_,n_neighbors=n_neighbors)
-        Y = se.fit_transform(X.T) # direct ouput dim_emb
-        return Y.T #(d_,n)
+        # Y = se.fit_transform(X.T) # direct ouput dim_emb
+        Y = [se.fit_transform(x.T) for x in X]
+        return sum([y.T for y in Y]) #(d_,n)
     
-    def predict(self,X_train,X_test, d_,n_neighbors,k):
-        dim_emb =  self.le(X_test,d_,n_neighbors)
+    def predict(self,X, d_,n_neighbors,k):
+        dim_emb =  self.le(X,d_,n_neighbors)
         pred = kmeans(dim_emb,k)
         return pred
 
