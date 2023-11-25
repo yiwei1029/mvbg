@@ -11,6 +11,7 @@ class MVBG:
         self.alpha = alpha
         self.gamma = gamma
         self.beta = beta
+        self.name = "MVBG"
 
     def mvbg(self, X, m,d_,t,epoch): #d_:embedding d; X is a list of (d_v,n)
         '''
