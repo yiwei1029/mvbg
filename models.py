@@ -295,6 +295,7 @@ class DSE:
             P = P*block3/block4
             b = B.argmax(1)
         return b
+    
 
 
 class MVP:
