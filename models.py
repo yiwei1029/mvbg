@@ -30,6 +30,7 @@ class MVBG:
             D_F=np.diag(np.sum(Z,axis=0))
             D_G=np.diag(np.sum(Z,axis=1))
             A_temp = np.linalg.inv(np.sqrt(D_F)).dot(Z.T).dot(np.linalg.inv(np.sqrt(D_G))) #for SVD
+            # print(A_temp)
             u_A,s_A,v_A =np.linalg.svd(A_temp)
             F = u_A[:,:d_]*np.sqrt(2)/2
             G = v_A[:d_,:].T*np.sqrt(2)/2
@@ -63,7 +64,8 @@ class MVBG:
         V = 2*sum([w[i]**self.gamma*X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
         # main step: Z=(m,n)
         #init mu and rho
-        mu = np.random.rand()+0.01
+        # mu = np.random.rand()+0.01
+        mu=self.alpha
         rho = np.random.rand()+1
         eta =  np.random.rand()
         for i in range(Z.shape[1]):
@@ -71,8 +73,7 @@ class MVBG:
             phi = Z[:,i]+1/mu*(eta-U_temp.T.dot(Z[:,i]))
             #Fixing φ and solving zi
             k = 1/mu*(mu*phi-eta-U_temp.dot(phi)+V[i,:].T)
-            # print(i,U_temp)
-            #find lmda
+            # # find lmda
             # for lmda in np.linspace(-np.abs(max(k))-1/len(k),np.abs(max(k))+1/len(k),len(k)*1000):
             #     z_i = np.where(k+lmda>=0,k+lmda,0)
             #     if(np.abs(z_i.sum()-1)<1/1000):
