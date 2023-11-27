@@ -64,8 +64,7 @@ class MVBG:
         V = 2*sum([w[i]**self.gamma*X[i].T.dot(U[i]) for i in range(len(w))])-self.beta*d_FG
         # main step: Z=(m,n)
         #init mu and rho
-        # mu = np.random.rand()+0.01
-        mu=self.alpha
+        mu=1000 #防止U_temp隨alpha值變化導致SVD失敗
         rho = np.random.rand()+1
         eta =  np.random.rand()
         for i in range(Z.shape[1]):
