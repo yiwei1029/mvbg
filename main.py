@@ -7,9 +7,10 @@ from tqdm import tqdm
 from models import MSE,MDcR,DSE,MVBG,CPCA,DPCA,MVP,LPP,LE
 import scipy
 from multiprocessing import Pool
+import multiprocessing
 import os
 def main_cal(model_name,params,dt_name):
-    print('Run task %s (%s) (%s)...' % (model_name, dt_name,os.getpid()))
+    # print('Run task %s (%s) (%s)...' % (model_name, dt_name,os.getpid()))
     
     # data
     X,labels=read_data(f'datasets/mats/{dt_name}.mat')
@@ -25,7 +26,7 @@ def main_cal(model_name,params,dt_name):
     train_ratio=0.1
     d_max  =  min(math.floor((1-train_ratio)*X[0].shape[1]),int(np.min([x.shape[0] for x in X])) ) #min(d,測試x的維數)
     d_range  = range(k,d_max)
-    model  =  eval(model_name)
+    model  =  model_name
 
     for d_ in tqdm(d_range): 
         nmi_list = [];acc_list =[]; ari_list=[]; purity_list=[]
@@ -72,12 +73,36 @@ def main_cal(model_name,params,dt_name):
         res_acc.append(acc)
         res_ari.append(ari)
         res_purity.append(purity)
-    np.save(f'./result/nmi/{dt_name}/{model.name}.npy',res_nmi)
-    np.save(f'./result/acc/{dt_name}/{model.name}.npy',res_acc)
-    np.save(f'./result/ari/{dt_name}/{model.name}.npy',res_ari)
-    np.save(f'./result/purity/{dt_name}/{model.name}.npy',res_purity)
+        # print('./result/nmi/{}/{}.npy'.format(dt_name, eval(model+'.name')))
+    np.save('./result/nmi/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_nmi)
+    np.save('./result/acc/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_acc)
+    np.save('./result/ari/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_ari)
+    np.save('./result/purity/{}/{}.npy'.format(dt_name, (eval(model+'.name'))),res_purity)
 def err_call_back(err):
         print(f'error：{str(err)} ')
+import traceback
+
+def error(msg, *args):
+    return multiprocessing.get_logger().error(msg, *args)
+class LogExceptions(object):
+    def __init__(self, callable):
+        self.__callable = callable
+        return
+
+    def __call__(self, *args, **kwargs):
+        try:
+            result = self.__callable(*args, **kwargs)
+        except Exception as e:
+            # Here we add some debugging help. If multiprocessing's
+            # debugging is on, it will arrange to log the traceback
+            error(traceback.format_exc())
+            # Re-raise the original exception so the Pool worker can
+            # clean up
+            raise
+
+        # It was fine, give a normal answer
+        return result
+    pass
 if __name__=='__main__':
     model_params_dict={'MSE()':'(X_test,0.5,d_,1e8,k,100)',
                         'MDcR()':'(X_test,d_,1e8,5,100,100)',
@@ -89,12 +114,12 @@ if __name__=='__main__':
                         'LPP()':'(X_train,X_test,1e7,d_,k,200)',
                         'LE()':'(X_test,d_,20,k)'}
     datasets_names = ['BBC','MSRC-v1','NGs','Reuters','YALE']
-
+    multiprocessing.log_to_stderr()  # 加上此行
     p = Pool(50)
     
     for model,params in model_params_dict.items():
         for dt_name in datasets_names:
-            p.apply_async(main_cal, args=(model,params,dt_name),error_callback=err_call_back)
+            p.apply_async(LogExceptions(main_cal), args=(model,params,dt_name))
     print('Waiting for all subprocesses done...')
     p.close()
     p.join()
