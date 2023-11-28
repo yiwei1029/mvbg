@@ -295,7 +295,8 @@ class DSE:
             P = P*block3/block4
             b = B.argmax(1)
         return b
-    
+    def predict(self,X,k,alpha,epoch =500):
+        return self.dse(X,k,alpha,epoch)
 
 
 class MVP:
