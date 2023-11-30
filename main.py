@@ -24,8 +24,8 @@ def main_cal(model_name,params,dt_name):
     #main loop
     res_nmi = [];res_acc =[];res_ari=[];res_purity  = []
     train_ratio=0.1
-    d_max  =  min(math.floor((1-train_ratio)*X[0].shape[1]),int(np.min([x.shape[0] for x in X])) ) #min(d,測試x的維數)
-    d_range  = range(k,d_max)
+    d_max  =  min(math.floor((1-train_ratio)*X[0].shape[1]),int(np.min([x.shape[0] for x in X])) ,100) #min(d,測試x的維數)
+    d_range  = range(k,d_max,3)
     model  =  model_name
 
     for d_ in tqdm(d_range): 
@@ -74,10 +74,14 @@ def main_cal(model_name,params,dt_name):
         res_ari.append(ari)
         res_purity.append(purity)
         # print('./result/nmi/{}/{}.npy'.format(dt_name, eval(model+'.name')))
-    np.save('./result/nmi/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_nmi)
-    np.save('./result/acc/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_acc)
-    np.save('./result/ari/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_ari)
-    np.save('./result/purity/{}/{}.npy'.format(dt_name, (eval(model+'.name'))),res_purity)
+    for indicator in ['nmi','acc','ari','purity']:
+        if not (os.path.exists('./result/{}/{}/'.format(indicator,dt_name))):
+            os.makedirs('./result/{}/{}/'.format(indicator,dt_name))
+        np.save('./result/{}/{}/{}.npy'.format(indicator,dt_name, eval(model+'.name')),eval('res_'+indicator))
+    # np.save('./result/nmi/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_nmi)
+    # np.save('./result/acc/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_acc)
+    # np.save('./result/ari/{}/{}.npy'.format(dt_name, eval(model+'.name')),res_ari)
+    # np.save('./result/purity/{}/{}.npy'.format(dt_name, (eval(model+'.name'))),res_purity)
 def err_call_back(err):
         print(f'error：{str(err)} ')
 import traceback
