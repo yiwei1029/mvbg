@@ -26,7 +26,7 @@ def main_cal(model_name,params,dt_name):
     train_ratio=0.5
     # d_max  =  min(math.floor((1-train_ratio)*X[0].shape[1]),\
     #               int(np.min([x.shape[0] for x in X])) ,100) #min(d,测试x的维数)
-    d_range  = range(2,30,2)
+    d_range  = range(k,50,2)
     model  =  model_name
     
 
@@ -66,11 +66,11 @@ def main_cal(model_name,params,dt_name):
         res_purity.append(purity_)
         # print('./result/nmi/{}/{}.npy'.format(dt_name, eval(model+'.name')))
     for indicator in ['nmi','acc','ari','purity']:
-        if not (os.path.exists('./result1/{}/{}/'.format(indicator,dt_name))):
-            os.makedirs('./result1/{}/{}/'.format(indicator,dt_name))
-        np.save('./result1/{}/{}/{}.npy'.format(indicator,dt_name, \
+        if not (os.path.exists('./result/{}/{}/'.format(indicator,dt_name))):
+            os.makedirs('./result/{}/{}/'.format(indicator,dt_name))
+        np.save('./result/{}/{}/{}.npy'.format(indicator,dt_name, \
                                                eval(model+'.name')),eval('res_'+indicator))
-        np.save('./result1/{}/{}/{}.npy'.format(indicator,dt_name,'d_range'),np.array(d_range))
+        np.save('./result/{}/{}/{}.npy'.format(indicator,dt_name,'d_range'),np.array(d_range))
         
 def err_call_back(err):
         print(f'error：{str(err)} ')
@@ -108,10 +108,9 @@ if __name__=='__main__':
                         'LPP()':'(X_train,X_test,1e7,d_,k,20)',
                         'LE()':'(X_test,d_,20,k)'}
     datasets_names = ['BBC','MSRC-v1','NGs','Reuters','YALE']
-    datasets_names = ['Reuters']
 
     multiprocessing.log_to_stderr()  # 加上此行
-    p = Pool(2)
+    p = Pool(4)
     
     for model,params in model_params_dict.items():
         for dt_name in datasets_names:
