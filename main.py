@@ -24,9 +24,9 @@ def main_cal(model_name,params,dt_name):
     #main loop
     res_nmi = [];res_acc =[];res_ari=[];res_purity  = []
     train_ratio=0.5
-    # d_max  =  min(math.floor((1-train_ratio)*X[0].shape[1]),\
-    #               int(np.min([x.shape[0] for x in X])) ,100) #min(d,测试x的维数)
-    d_range  = range(k,50,2)
+    d_max  =  min(math.floor((1-train_ratio)*X[0].shape[1]),\
+                  int(min([x.shape[0] for x in X])) ) #min(n_test,d_min_X)
+    d_range  = range(k,min(d_max,k+30),2)
     model  =  model_name
     
 
@@ -87,14 +87,11 @@ class LogExceptions(object):
         try:
             result = self.__callable(*args, **kwargs)
         except Exception as e:
-            # Here we add some debugging help. If multiprocessing's
-            # debugging is on, it will arrange to log the traceback
+            # Here we add some debugging help. If multiprocessing's debugging is on, it will arrange to log the traceback
             error(traceback.format_exc())
-            # Re-raise the original exception so the Pool worker can
-            # clean up
+            # Re-raise the original exception so the Pool worker can clean up
             raise
-
-        # It was fine, give a normal answer
+            # It was fine, give a normal answer
         return result
     pass
 if __name__=='__main__':
@@ -108,9 +105,10 @@ if __name__=='__main__':
                         'LPP()':'(X_train,X_test,1e7,d_,k,20)',
                         'LE()':'(X_test,d_,20,k)'}
     datasets_names = ['BBC','MSRC-v1','NGs','Reuters','YALE']
+    datasets_names = ['NGs'] #
 
     multiprocessing.log_to_stderr()  # 加上此行
-    p = Pool(4)
+    p = Pool(2)
     
     for model,params in model_params_dict.items():
         for dt_name in datasets_names:
