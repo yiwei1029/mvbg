@@ -105,7 +105,7 @@ if __name__=='__main__':
                         'LPP()':'(X_train,X_test,1e7,d_,k,20)',
                         'LE()':'(X_test,d_,20,k)'}
     datasets_names = ['BBC','MSRC-v1','NGs','Reuters','YALE']
-    datasets_names = ['NGs'] #
+    datasets_names = ['YALE'] #
 
     multiprocessing.log_to_stderr()  # 加上此行
     p = Pool(2)
