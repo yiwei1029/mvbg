@@ -1,8 +1,8 @@
-from colorama import init
 from matplotlib import pyplot as plt
 import numpy as np
 from numpy.linalg import multi_dot
 from sklearn import manifold
+from sympy import primefactors
 from utils import *
 from tqdm import tqdm
 import numpy.linalg as LA
@@ -50,8 +50,9 @@ class MVBG:
                 self.alpha*np.linalg.norm(Z)+\
                 self.beta*np.trace(2*F.T.dot(A_temp).dot(G))
             obj_values.append(obj_v)
-        plt.plot(obj_values)
-        plt.show()
+        # print(obj_values)
+        # plt.plot(obj_values)
+        # plt.show()
         return F.T
 
     def predict(self,X, m,d_,n_clusters,t,epoch):
@@ -82,20 +83,17 @@ class MVBG:
             #Fixing φ and solving zi
             k = 1/mu*(mu*phi-eta-U_temp.dot(phi)+V[i,:].T)
             # # find lmda
-            lmda  =  np.mean(k)
+            lmda  =  -np.mean(k)
             z_i = np.where(k+lmda>=0,k+lmda,0)
-            while(np.abs(z_i.sum()-1)>0.1):
-                lmda-=np.abs(1-z_i.sum())/len(z_i)
+            while(np.abs(z_i.sum()-1)>0.01):
+                lmda-=(z_i.sum()-1)/(k+lmda>0).sum()
                 z_i = np.where(k+lmda>=0,k+lmda,0)
-            print(sum(z_i))
 
-            # z_i = np.exp(k/np.max(k))/sum(np.exp(k/np.max(k)))
-
+            #
             eta = eta+mu*(z_i-phi)
             mu = rho*mu
             Z[:,i]=z_i 
-            # Z = Z/Z.sum(1).reshape(-1,1)
-            # print(i,Z)
+            
 
 class DPCA:
     def __init__(self) -> None:

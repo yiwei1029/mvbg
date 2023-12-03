@@ -135,3 +135,21 @@ def purity_score(y_true, y_pred):
         y_voted_labels[y_pred==cluster] = winner
 
     return accuracy_score(y_true, y_voted_labels)
+
+def find_sum_relu_x(a,x):
+    '''
+    a: array
+    x:  x of `max(a+x,0).sum()`
+    '''
+    x =-np.mean(a)
+    res = np.where(a+x>0,a+x,0).sum()
+
+    # time1 = time.time()
+    count = 0
+    eps=0.1
+    while(np.abs(res-1)>eps):
+        x-=(res-1)/((a+x)>0).sum()
+        res = np.where(a+x>0,a+x,0).sum()
+        # count+=1
+    # print('time:{}, count:{}'.format((time.time()-time1),count))
+    return res
