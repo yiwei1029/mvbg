@@ -1,4 +1,5 @@
 from colorama import init
+from matplotlib import pyplot as plt
 import numpy as np
 from numpy.linalg import multi_dot
 from sklearn import manifold
@@ -22,6 +23,7 @@ class MVBG:
         # Z = np.full(shape=(m,n),fill_value=1/m)
         Z = np.random.rand(m,n)
         # Z = Z/Z.sum(1).reshape(-1,1)
+        obj_values =  []
         for i in range(epoch):
             #step1: updating U_v=(d_v,m)
             v = len(w)
@@ -43,6 +45,13 @@ class MVBG:
             # h = np.array([sum(h_v**2) for h_v in h])
             power = 1/(1-self.gamma)
             w = h**power/sum(h**power)
+            #obj value
+            obj_v = sum([w[i]*h[i] for i in range(v)])+\
+                self.alpha*np.linalg.norm(Z)+\
+                self.beta*np.trace(2*F.T.dot(A_temp).dot(G))
+            obj_values.append(obj_v)
+        plt.plot(obj_values)
+        plt.show()
         return F.T
 
     def predict(self,X, m,d_,n_clusters,t,epoch):
@@ -73,11 +82,14 @@ class MVBG:
             #Fixing φ and solving zi
             k = 1/mu*(mu*phi-eta-U_temp.dot(phi)+V[i,:].T)
             # # find lmda
-            # for lmda in np.linspace(-np.abs(max(k))-1/len(k),np.abs(max(k))+1/len(k),len(k)*1000):
-            #     z_i = np.where(k+lmda>=0,k+lmda,0)
-            #     if(np.abs(z_i.sum()-1)<1/1000):
-            #         break
-            z_i = np.exp(k/np.max(k))/sum(np.exp(k/np.max(k)))
+            lmda  =  np.mean(k)
+            z_i = np.where(k+lmda>=0,k+lmda,0)
+            while(np.abs(z_i.sum()-1)>0.1):
+                lmda-=np.abs(1-z_i.sum())/len(z_i)
+                z_i = np.where(k+lmda>=0,k+lmda,0)
+            print(sum(z_i))
+
+            # z_i = np.exp(k/np.max(k))/sum(np.exp(k/np.max(k)))
 
             eta = eta+mu*(z_i-phi)
             mu = rho*mu
