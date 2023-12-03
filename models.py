@@ -345,3 +345,11 @@ class MVP:
         dim_emb = self.mvp(X,r,alpha,t,d_,epoch).T
         pred = kmeans(dim_emb,k)
         return pred
+
+class BASE:
+    def __init__(self) -> None:
+        self.name  =   'BASE'
+    def base(self,X,n_clusters):
+        return kmeans(X,n_clusters)
+    def predict(self,X,n_clusters):
+        return self.base(X,n_clusters)

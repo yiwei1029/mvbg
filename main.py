@@ -103,7 +103,8 @@ if __name__=='__main__':
                         'DPCA()':'(X_train,X_test,d_,k)',
                         'MVP()':'(X_test,0.5,2,1e6,d_,k,10)',
                         'LPP()':'(X_train,X_test,1e7,d_,k,20)',
-                        'LE()':'(X_test,d_,20,k)'}
+                        'LE()':'(X_test,d_,20,k)',
+                        'BASE()':'(X_test,k)'}
     datasets_names = ['BBC','MSRC-v1','NGs','Reuters','YALE']
     datasets_names = ['YALE'] #
 
