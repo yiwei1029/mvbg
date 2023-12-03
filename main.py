@@ -4,7 +4,7 @@ warnings.filterwarnings('ignore')
 import math
 from utils import *
 from tqdm import tqdm
-from models import MSE,MDcR,DSE,MVBG,CPCA,DPCA,MVP,LPP,LE
+from models import MSE,MDcR,DSE,MVBG,CPCA,DPCA,MVP,LPP,LE,BASE
 import scipy
 from multiprocessing import Pool
 import multiprocessing
@@ -95,16 +95,17 @@ class LogExceptions(object):
         return result
     pass
 if __name__=='__main__':
-    model_params_dict={'MSE()':'(X_test,0.5,d_,1e8,k,10)',
-                        'MDcR()':'(X_test,d_,1e8,5,k,10)',
+    model_params_dict={'BASE()':'(X_test,k)',
+                        'MSE()':'(X_test,0.5,d_,1e7,k,10)',
+                        'MDcR()':'(X_test,d_,1e7,5,k,10)',
                         'DSE()':'(X_test,k,2,10)',
-                        'MVBG(0.1,2,0.1)':'(X_test,30,d_,k,1e8,10)',
+                        'MVBG(0.1,2,0.1)':'(X_test,60,d_,k,1e7,10)',
                         'CPCA()':'(X_train, X_test,d_,k)',
                         'DPCA()':'(X_train,X_test,d_,k)',
                         'MVP()':'(X_test,0.5,2,1e6,d_,k,10)',
                         'LPP()':'(X_train,X_test,1e7,d_,k,20)',
-                        'LE()':'(X_test,d_,20,k)',
-                        'BASE()':'(X_test,k)'}
+                        'LE()':'(X_test,d_,20,k)'
+                        }
     datasets_names = ['BBC','MSRC-v1','NGs','Reuters','YALE']
     datasets_names = ['YALE'] #
 

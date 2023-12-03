@@ -350,6 +350,7 @@ class BASE:
     def __init__(self) -> None:
         self.name  =   'BASE'
     def base(self,X,n_clusters):
+        X = np.concatenate(X)
         return kmeans(X,n_clusters)
     def predict(self,X,n_clusters):
         return self.base(X,n_clusters)
