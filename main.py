@@ -108,7 +108,7 @@ if __name__=='__main__':
                         }
     # model_params_dict= {'MVBG(0.1,2,0.1)':'(X_test,60,d_,k,1e7,10)'}
     datasets_names = ['BBC','MSRC-v1','NGs','Reuters','YALE']
-    datasets_names = ['BBC'] #
+    # datasets_names = ['BBC'] #
 
     multiprocessing.log_to_stderr()  # 加上此行
     p = Pool(2)
