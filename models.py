@@ -34,8 +34,8 @@ class MVBG:
             A_temp = np.linalg.inv(np.sqrt(D_F)).dot(Z.T).dot(np.linalg.inv(np.sqrt(D_G))) #for SVD
             # print(A_temp)
             u_A,s_A,v_A =np.linalg.svd(A_temp)
-            F = u_A[:,:d_]*np.sqrt(2)/2
-            G = v_A[:d_,:].T*np.sqrt(2)/2
+            F = u_A[:d_,:].T*np.sqrt(2)/2
+            G = v_A[:,:d_]*np.sqrt(2)/2
             E = np.concatenate([F,G])
             #step3: Updating Z
             self.update_z(w,U, X,D_F,D_G, F,G,Z,t)
